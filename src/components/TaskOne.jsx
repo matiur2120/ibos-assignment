@@ -34,7 +34,6 @@ const TaskOne = () => {
     event.preventDefault();
     const { isValid, errors } = validate();
     if (isValid) {
-      console.log(event);
       setusers([...users, { id: uuidv4(), name: name, email: email }]);
       setName("");
       setEmail("");
