@@ -1,16 +1,11 @@
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 
 const TaskOne = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [duplicateError, setDuplicateError] = useState("");
+  const [errors, setErrors] = useState("");
+
   const [users, setusers] = useState([
     {
       id: uuidv4(),
@@ -34,17 +29,18 @@ const TaskOne = () => {
     },
   ]);
 
-  const onSubmit = (data) => {
-    const isDuplicate = users.find((user) => {
-      return user.email === data.email;
-    });
-    if (isDuplicate) {
-      setDuplicateError("Email is already exists");
-    } else {
-      setDuplicateError("");
-      setusers([...users, {id: uuidv4(),  name: data.name, email: data.email }]);
+  const handleSubmit = (event) => {
+    console.log("hi");
+    event.preventDefault();
+    const { isValid, errors } = validate();
+    if (isValid) {
+      console.log(event);
+      setusers([...users, { id: uuidv4(), name: name, email: email }]);
       setName("");
       setEmail("");
+      setErrors("");
+    } else {
+      setErrors(errors);
     }
   };
   const handleName = (e) => {
@@ -59,10 +55,30 @@ const TaskOne = () => {
     });
     setusers(newUsers);
   };
+  console.log(users);
+  const validate = () => {
+    const errors = {};
+    if (!name) {
+      errors.name = "Name is empty!";
+    }
+    if (!email) {
+      errors.email = "Email is Empty";
+    }
+    const isDuplicate = users.find((user) => {
+      return user.email === email;
+    });
+    if (isDuplicate) {
+      errors.email = "Email is already exists";
+    }
+    return {
+      errors,
+      isValid: Object.keys(errors).length === 0,
+    };
+  };
 
   return (
     <div className='mx-4'>
-      <form className='mb-8 mt-4' action='' onSubmit={handleSubmit(onSubmit)}>
+      <form className='mb-8 mt-4' action='' onSubmit={handleSubmit}>
         <div className='flex'>
           <div className='flex flex-col mr-3'>
             <label
@@ -73,17 +89,15 @@ const TaskOne = () => {
             </label>
             <input
               id='name'
-              placeholder='Enter name'
-              {...register("name", { required: "Name is empty!" })}
-              type='text'
               value={name}
+              name='name'
+              placeholder='Enter name'
+              type='text'
               onChange={handleName}
               className='shadow appearance-none border border-gray-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'
             />
             {errors.name && (
-              <p className='text-xs -mt-2 text-red-700'>
-                {errors.name.message}
-              </p>
+              <p className='text-xs -mt-2 text-red-700'>{errors.name}</p>
             )}
           </div>
           <div className='flex flex-col mr-3'>
@@ -95,24 +109,20 @@ const TaskOne = () => {
             </label>
             <input
               id='email'
-              placeholder='Enter name'
-              {...register("email", { required: "Email is empty!" })}
-              type='email'
+              name='email'
               value={email}
+              placeholder='Enter email'
+              type='email'
               onChange={handleEmail}
               className='shadow appearance-none border border-gray-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'
             />
             {errors.email && (
-              <p className='text-xs -mt-2 text-red-700'>
-                {errors.email.message}
-              </p>
-            )}
-            {duplicateError && (
-              <p className='text-xs -mt-2 text-red-700'>{duplicateError}</p>
+              <p className='text-xs -mt-2 text-red-700'>{errors.email}</p>
             )}
           </div>
           <div className='flex flex-col justify-center'>
             <button
+              disabled={!name || !email}
               className='bg-transparent text-gray-700 font-semibold hover:text-gray-900 rounded py-1  px-8 border border-gray-500 focus:outline-none mt-4'
               type='submit'
             >
@@ -131,8 +141,8 @@ const TaskOne = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr>
+            {users.map((user, index) => (
+              <tr key={index}>
                 <td className='border border-gray-600'>{user.name}</td>
                 <td className='border border-gray-600'>{user.email}</td>
                 <td className='border border-gray-600'>
