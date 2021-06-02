@@ -42,7 +42,7 @@ const TaskOne = () => {
       setDuplicateError("Email is already exists");
     } else {
       setDuplicateError("");
-      setusers([...users, { name: data.name, email: data.email }]);
+      setusers([...users, {id: uuidv4(),  name: data.name, email: data.email }]);
       setName("");
       setEmail("");
     }
